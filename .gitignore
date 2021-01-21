@@ -1,0 +1,5 @@
+node_modules
+build
+.vscode/settings.json
+todo.txt
+yarn.lock
