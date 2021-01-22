@@ -1,11 +1,19 @@
 // node module for working wih file and dir paths
 const path = require('path');
+
+// webpack-merge is used to merge 2 webpack configurations
+const { merge } = require("webpack-merge");
 /** 
  * the HtmlWebpackPlugin simplifies creation 
  * of html files to serve you webpack bundles
  * docs: https://webpack.js.org/plugins/html-webpack-plugin/
  */
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+var HtmlWebpackPlugin = require("html-webpack-plugin");
+/**
+ * PostCSS Normalize lets you use the parts of normalize.css or sanitize.css that you need from your browserslist.
+ * docs: https://www.npmjs.com/package/postcss-normalize
+ */
+const postcssNormalize = require('postcss-normalize');
 /**
  * This plugin uses cssnano to optimize and minify your CSS.
  * docs: https://github.com/webpack-contrib/css-minimizer-webpack-plugin
@@ -27,12 +35,63 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
  */
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
-/**
- * PostCSS Normalize lets you use the parts of normalize.css or sanitize.css that you need from your browserslist.
- * docs: https://www.npmjs.com/package/postcss-normalize
- */
-const postcssNormalize = require('postcss-normalize');
 
+// shared configuration
+const commonConfig = {
+    // entry file to your project
+    entry: {
+        main: path.resolve(__dirname, 'src', 'index.tsx'),
+        // import your vendor js libraries in vendor so you don't
+        // have to recompile them every time you change your code
+        vendor: path.resolve(__dirname, 'src', 'vendor.tsx'),
+    },
+
+    // describe how to resolve path for imported modules
+    resolve: {
+        // aliases for importing modules
+        // instead of import react from '../../node_modules/react
+        // use import react from 'react'
+        alias: {
+            react: path.join(__dirname, 'node_modules', 'react'),
+        },
+
+        // attempt to resolve these extensions in order
+        extensions: ['.tsx', '.ts', '.jsx', '.js']
+    },
+
+    // where the build folder is
+    output: {
+        filename: '[name].[contenthash].bundle.js',
+        path: path.resolve(__dirname, 'build'),
+    },
+
+    // loaders help webpack understand other files like css
+    module: {
+        rules: [
+            {
+                test: /\.(svg|png|jpg|gif)$/,
+                use: {
+                    loader: "file-loader",
+                    options: {
+                        name: "[name].[hash].[ext]",
+                        outputPath: "assets/images"
+                    }
+                }
+            },
+            {
+                test: /\.(js|jsx|tsx|ts)$/,
+                exclude: /node_modules/,
+                use: {
+                    /**
+                     * This package allows transpiling JavaScript files using Babel and webpack.
+                     * docs: https://webpack.js.org/loaders/babel-loader/
+                     */
+                    loader: 'babel-loader',
+                }
+            },
+        ]
+    }
+}
 
 const postCssLoaderConfig = {
     loader: "postcss-loader",
@@ -57,165 +116,129 @@ const postCssLoaderConfig = {
     }
 }
 
+// development configuration
+const devConfig = merge(commonConfig, {
+    mode: 'development',
 
-
-module.exports = (environment) => {
-
-    const webpack_common_config = {
-        // entry file to your project
-        entry: {
-            main: path.resolve(__dirname, 'src', 'index.tsx'),
-            // import your vendor js libraries in vendor so you don't
-            // have to recompile them every time you change your code
-            vendor: path.resolve(__dirname, 'src', 'vendor.tsx'),
-        },
-
-        // describe how to resolve path for imported modules
-        resolve: {
-            // aliases for importing modules
-            // instead of import react from '../../node_modules/react
-            // use import react from 'react'
-            alias: {
-                react: path.join(__dirname, 'node_modules', 'react'),
-            },
-
-            // attempt to resolve these extensions in order
-            extensions: ['.tsx', '.ts', '.jsx', '.js']
-        },
-
-        // where the build folder is
-        output: {
-            filename: '[name].[contentHash].bundle.js',
-            path: path.resolve(__dirname, 'build'),
-        },
-
-        // loaders help webpack understand other files like css
-        module: {
-            rules: [
-                {
-                    test: /\.(svg|png|jpg|gif)$/,
-                    use: {
-                        loader: "file-loader",
-                        options: {
-                            name: "[name].[hash].[ext]",
-                            outputPath: "assets/images"
-                        }
-                    }
-                },
-                {
-                    test: /\.(js|jsx|tsx|ts)$/,
-                    exclude: /node_modules/,
-                    use: {
-                        /**
-                         * This package allows transpiling JavaScript files using Babel and webpack.
-                         * docs: https://webpack.js.org/loaders/babel-loader/
-                         */
-                        loader: 'babel-loader',
-                    }
-                },
-            ]
-        }
-    };
-
-
-    if (environment.production)
-        // use production configuration
-        return {
-            ...webpack_common_config,
-
-            mode: "production",
-
-            module: {
-                rules: [
-                    ...webpack_common_config.module.rules,
-                    {
-                        test: /\.css$/,
-                        use: [
-                            MiniCssExtractPlugin.loader, //2. Extract css into files
-                            "css-loader", //1. Turns css into commonjs
-                            postCssLoaderConfig,
-                        ]
-                    }
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                    "style-loader", //2. Inject styles into DOM
+                    "css-loader", //1. Turns css into commonjs
+                    postCssLoaderConfig,
                 ]
-            },
-
-            optimization: {
-                minimize: true,
-                minimizer: [
-
-                    new CssMinimizerPlugin(),
-
-                    new TerserPlugin(),
-
-                    new HtmlWebpackPlugin({
-                        template: "./src/index.html",
-                        minify: {
-                            removeAttributeQuotes: true,
-                            collapseWhitespace: true,
-                            removeComments: true
-                        }
-                    })
-                ],
-            },
-
-            plugins: [
-
-                new MiniCssExtractPlugin({ filename: "[name].[contentHash].css" }),
-
-                new CleanWebpackPlugin(),
-
-            ],
-        };
-
-    else
-        // use development environment
-        return {
-            ...webpack_common_config,
-
-            mode: 'development',
-
-            module: {
-                rules: [
-                    ...webpack_common_config.module.rules,
-
-                    {
-                        test: /\.css$/,
-                        use: [
-                            "style-loader", //2. Inject styles into DOM
-                            "css-loader", //1. Turns css into commonjs
-                            postCssLoaderConfig,
-                        ]
-                    }
-                ]
-            },
-
-            plugins: [
-                new HtmlWebpackPlugin({
-                    template: path.resolve(__dirname, "src", "index.html"),
-                })
-            ],
-
-            // configurations for the webpack development server
-            devServer: {
-                historyApiFallback: true,
-                /*
-                stats: {
-                    colors: true,
-                    hash: false,
-                    version: false,
-                    timings: false,
-                    assets: false,
-                    chunks: false,
-                    modules: false,
-                    reasons: false,
-                    children: false,
-                    source: false,
-                    errors: false,
-                    errorDetails: false,
-                    warnings: false,
-                    publicPath: false
-                }
-                */
             }
-        };
-};
+        ]
+    },
+
+    plugins: [
+        new HtmlWebpackPlugin({
+            template: path.resolve(__dirname, "src", "index.ejs"),
+        })
+    ],
+
+    // configurations for the webpack development server
+    devServer: {
+        historyApiFallback: true,
+        stats: {
+            colors: true,
+            hash: false,
+            version: false,
+            timings: false,
+            assets: false,
+            chunks: false,
+            modules: false,
+            reasons: false,
+            children: false,
+            source: false,
+            errors: false,
+            errorDetails: false,
+            warnings: false,
+            publicPath: false
+        }
+    }
+});
+
+// production configuration
+const prodConfig = merge(commonConfig, {
+    mode: "production",
+
+
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                    MiniCssExtractPlugin.loader, //2. Extract css into files
+                    "css-loader", //1. Turns css into commonjs
+                    postCssLoaderConfig,
+                ]
+            }
+        ]
+    },
+
+    optimization: {
+        minimize: true,
+        minimizer: [
+
+            new CssMinimizerPlugin(),
+
+            new TerserPlugin(),
+
+            new HtmlWebpackPlugin({
+                template: path.resolve(__dirname, "src", "index.ejs"),
+
+                options: {
+                    title: 'Document',
+                },
+
+                inject: false,
+
+                minify: {
+                    removeAttributeQuotes: true,
+                    collapseWhitespace: true,
+                    removeComments: true
+                }
+            })
+        ],
+    },
+
+    plugins: [
+
+        new MiniCssExtractPlugin({ filename: "[name].[contenthash].css" }),
+
+        new CleanWebpackPlugin(),
+
+    ],
+});
+
+
+// uses env variables to determine what configuration to use
+// you change env variables in package.json file in scripts section
+module.exports = env => {
+    if (env.production) {
+
+        // if build location is specified then
+        // change config to output the build folder there
+        if (env.buildLocation) {
+            return merge(
+                prodConfig,
+                {
+                    // where the build folder is
+                    output: {
+                        filename: '[name].[contenthash].bundle.js',
+                        path: path.resolve(env.buildLocation, 'build'),
+                    },
+                }
+            )
+        } else {
+            return prodConfig;
+
+        }
+
+    } else {
+        return devConfig;
+    }
+}
