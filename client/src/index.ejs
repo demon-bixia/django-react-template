@@ -8,7 +8,7 @@
 
 <head>
     <title>
-        <%= htmlWebpackPlugin.options.title %>
+        Document
     </title>
     <% if(webpackConfig.mode === 'production') { %>
         <% for (var css in htmlWebpackPlugin.files.css) { %>
@@ -32,7 +32,8 @@
     </div>
     <% if(webpackConfig.mode === 'production') { %>
         <% for (var js in htmlWebpackPlugin.files.js) { %>
-            <link href="{% static 'js/<%= htmlWebpackPlugin.files.js[js] %>' %}" rel="stylesheet">
+            <script src="{% static 'js/<%= htmlWebpackPlugin.files.js[js] %>' %}" rel="stylesheet">
+            </script>
         <% } %>    
     <% } else { %>
 

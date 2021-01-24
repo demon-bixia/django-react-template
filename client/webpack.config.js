@@ -1,7 +1,9 @@
 // node module for working wih file and dir paths
 const path = require('path');
-
-// webpack-merge is used to merge 2 webpack configurations
+/**
+ * webpack-merge is used to merge 2 webpack configurations
+ * docs: https://www.npmjs.com/package/webpack-merge
+ */
 const { merge } = require("webpack-merge");
 /** 
  * the HtmlWebpackPlugin simplifies creation 
@@ -35,6 +37,12 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
  */
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
+/*
+* A Webpack plugin that allows you to copy 
+* files and directories before and after builds
+* docs: https://github.com/gregnb/filemanager-webpack-plugin
+*/
+const FileManagerPlugin = require('filemanager-webpack-plugin');
 
 // shared configuration
 const commonConfig = {
@@ -190,10 +198,6 @@ const prodConfig = merge(commonConfig, {
             new HtmlWebpackPlugin({
                 template: path.resolve(__dirname, "src", "index.ejs"),
 
-                options: {
-                    title: 'Document',
-                },
-
                 inject: false,
 
                 minify: {
@@ -210,7 +214,6 @@ const prodConfig = merge(commonConfig, {
         new MiniCssExtractPlugin({ filename: "[name].[contenthash].css" }),
 
         new CleanWebpackPlugin(),
-
     ],
 });
 
@@ -218,27 +221,30 @@ const prodConfig = merge(commonConfig, {
 // uses env variables to determine what configuration to use
 // you change env variables in package.json file in scripts section
 module.exports = env => {
-    if (env.production) {
-
-        // if build location is specified then
-        // change config to output the build folder there
-        if (env.buildLocation) {
-            return merge(
-                prodConfig,
-                {
-                    // where the build folder is
-                    output: {
-                        filename: '[name].[contenthash].bundle.js',
-                        path: path.resolve(env.buildLocation, 'build'),
-                    },
-                }
-            )
-        } else {
+    if (env.production)
+        if (!env.DjangoProject)
             return prodConfig;
+        else
+            return merge(prodConfig, {
+                plugins: [
+                    // move files to DjangoProject location
+                    // 1. move css files to DjangoProject/assets/css
+                    // 2. move js files to DjangoProject/assets/js
+                    // 3. move html files to DjangoProject/templates/index.html
 
-        }
-
-    } else {
+                    new FileManagerPlugin({
+                        events: {
+                            onEnd: {
+                                copy: [
+                                    { source: './build/*.html', destination: path.resolve(env.DjangoProject, 'templates/') },
+                                    { source: './build/*.js', destination: path.resolve(env.DjangoProject, 'assets/js/') },
+                                    { source: './build/*.css', destination: path.resolve(env.DjangoProject, 'assets/css/') },
+                                ]
+                            }
+                        }
+                    })
+                ],
+            });
+    else
         return devConfig;
-    }
 }
