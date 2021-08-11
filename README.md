@@ -1,6 +1,7 @@
 <h1 align="center">
     Webpack config for working with django and react
 </h1>
+
 ### Features
 
 - [x] {% static %} tag insertion
