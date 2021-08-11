@@ -40,7 +40,7 @@
   },
   "scripts": {
     "start": "webpack serve --port 3000",
-    "build": "webpack --env production --env DjangoProject=/home/muhammad/Documents/Projects/Personal/Web/django-react-template/server",
+    "build": "webpack --env production --env DjangoProject=/path/to/your/project",
     "test": "jest"
   },
   "browserslist": {
