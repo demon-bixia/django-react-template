@@ -1,26 +1,20 @@
-<h1 align="center">
-    Webpack config for working with django and react
-</h1>
+## About 📝
 
-### Features
-
-- [x] {% static %} tag insertion
-- [x] development server
-- [x] minify on production
-- [x] Jest Support
-- [x] TypeScript support
-- [x] Scss support
-- [x] post css support
-- [x] testing-library support
-
-### How it works
 <p>
-This webpack config uses ejs template engine to insert the static django template language tag in the index.html that
-React uses. building will export the js/css files to assets/css and assets/js directory in the django project root
-directory, and the html files to template/.
+A react project template to use with django. exports react 
+builds to django project with js and css files embedded as static template tags.
+so you can server react using django!
 </p>
 
-### How to use it
+## Features ⚡
+
+-[x] serve react using django.
+-[x] development server.
+-[x] typescript support.
+-[x] sass support.
+-[x] multiple webpack configs using merge.
+
+## Installation 🛫
 
 Clone the repo
 
@@ -28,19 +22,14 @@ Clone the repo
 git clone https://github.com/MuhammadSalahAli/django-react-template.git
 ```
 
-Enter the project's folder
-
-```bash
-cd django-react-template/
-```
-
 Enter the client folder
 
 ```bash
-cd client/
+cd django-react-template/client/
 ```
 
-In package.json build script change DjangoProject to your django app project directory.
+To change the django project location put the absolute path of your django project base directory. or you can use the
+default django project.
 
 ```json
 {
@@ -48,26 +37,46 @@ In package.json build script change DjangoProject to your django app project dir
 }
 ```
 
-Install dependencies
+Install client dependencies
 
 ```bash
 yarn install
 ```
 
-Or
-
-```bash
-npm install
-```
-
-To run the client dev server
+Start dev server
 
 ```bash
 yarn run start
 ```
 
-To build the client code and export to django project
+Build the client code and export it to your django project
 
 ```bash
 yarn run build
 ```
+
+Enter the server directory
+
+```bash
+cd django-react-template/server/
+```
+
+Install server dependencies
+
+```bash
+pipenv install
+```
+
+Enable the virtual environment
+
+```bash
+pipenv shell
+```
+
+Run the django server
+
+```bash
+python manage.py runserver
+```
+
+Visit <a href="localhost:8000">localhost</a> to see django serving your React application. 

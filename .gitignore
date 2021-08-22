@@ -146,3 +146,7 @@ dmypy.json
 cython_debug/
 # yarn
 yarn.lock
+
+
+node_modules
+*/node_modules

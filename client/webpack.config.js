@@ -4,9 +4,9 @@ const path = require('path');
  * webpack-merge is used to merge 2 webpack configurations
  * docs: https://www.npmjs.com/package/webpack-merge
  */
-const { merge } = require("webpack-merge");
-/** 
- * the HtmlWebpackPlugin simplifies creation 
+const {merge} = require("webpack-merge");
+/**
+ * the HtmlWebpackPlugin simplifies creation
  * of html files to serve you webpack bundles
  * docs: https://webpack.js.org/plugins/html-webpack-plugin/
  */
@@ -35,7 +35,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
  * A webpack plugin to remove/clean your build folder(s).
  * docs: https://github.com/johnagan/clean-webpack-plugin
  */
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const {CleanWebpackPlugin} = require("clean-webpack-plugin");
 
 /*
 * A Webpack plugin that allows you to copy 
@@ -48,10 +48,10 @@ const FileManagerPlugin = require('filemanager-webpack-plugin');
 const commonConfig = {
     // entry file to your project
     entry: {
-        main: path.resolve(__dirname, 'src', 'index.tsx'),
+        main: path.resolve(__dirname, 'src', 'index'),
         // import your vendor js libraries in vendor so you don't
         // have to recompile them every time you change your code
-        vendor: path.resolve(__dirname, 'src', 'vendor.tsx'),
+        vendor: path.resolve(__dirname, 'src', 'vendor'),
     },
 
     // describe how to resolve path for imported modules
@@ -150,22 +150,6 @@ const devConfig = merge(commonConfig, {
     // configurations for the webpack development server
     devServer: {
         historyApiFallback: true,
-        stats: {
-            colors: true,
-            hash: false,
-            version: false,
-            timings: false,
-            assets: false,
-            chunks: false,
-            modules: false,
-            reasons: false,
-            children: false,
-            source: false,
-            errors: false,
-            errorDetails: false,
-            warnings: false,
-            publicPath: false
-        }
     }
 });
 
@@ -211,7 +195,7 @@ const prodConfig = merge(commonConfig, {
 
     plugins: [
 
-        new MiniCssExtractPlugin({ filename: "[name].[contenthash].css" }),
+        new MiniCssExtractPlugin({filename: "[name].[contenthash].css"}),
 
         new CleanWebpackPlugin(),
     ],
@@ -222,9 +206,11 @@ const prodConfig = merge(commonConfig, {
 // you change env variables in package.json file in scripts section
 module.exports = env => {
     if (env.production)
-        if (!env.DjangoProject)
+        if (!env.DjangoProject) {
             return prodConfig;
-        else
+        } else {
+            const project_location = env.DjangoProject === 'default' ? path.resolve(__dirname, '../server') : env.DjangoProject;
+
             return merge(prodConfig, {
                 plugins: [
                     // move files to DjangoProject location
@@ -236,15 +222,25 @@ module.exports = env => {
                         events: {
                             onEnd: {
                                 copy: [
-                                    { source: './build/*.html', destination: path.resolve(env.DjangoProject, 'templates/') },
-                                    { source: './build/*.js', destination: path.resolve(env.DjangoProject, 'assets/js/') },
-                                    { source: './build/*.css', destination: path.resolve(env.DjangoProject, 'assets/css/') },
+                                    {
+                                        source: './build/*.html',
+                                        destination: path.resolve(project_location, 'templates/')
+                                    },
+                                    {
+                                        source: './build/*.js',
+                                        destination: path.resolve(project_location, 'assets/js/')
+                                    },
+                                    {
+                                        source: './build/*.css',
+                                        destination: path.resolve(project_location, 'assets/css/')
+                                    },
                                 ]
                             }
                         }
                     })
                 ],
             });
+        }
     else
         return devConfig;
 }
