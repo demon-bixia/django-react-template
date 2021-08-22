@@ -8,11 +8,15 @@ so you can server react using django!
 
 ## Features ⚡
 
--[x] serve react using django.
--[x] development server.
--[x] typescript support.
--[x] sass support.
--[x] multiple webpack configs using merge.
+- [x] serve react using django.
+
+- [x] development server.
+
+- [x] typescript support.
+
+- [x] sass support.
+
+- [x] multiple webpack configs using merge.
 
 ## Installation 🛫
 
